@@ -1,0 +1,112 @@
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: '카운트 9에 궈널로 리다이렉팅',
+      home: CounterApp(),
+    );
+  }
+}
+
+class CounterApp extends StatefulWidget {
+  @override
+  _CounterAppState createState() => _CounterAppState();
+}
+
+class _CounterAppState extends State<CounterApp> {
+  int _count = 0;
+
+  // 카운트를 증가시키는 함수
+  void _incrementCount() {
+    setState(() {
+      _count++;
+      // 카운트가 9일 때 URL로 이동
+      if (_count == 9) {
+        _launchURL('https://app.gournal.me/');
+        // 카운트를 0으로 리셋
+        _count = 0;
+      }
+    });
+  }
+
+  // URL을 열기 위한 함수
+  Future<void> _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  // 길게 누르면 호출되는 함수
+  void _longPressHandler() {
+    const longPressDuration = Duration(seconds: 3);
+    Future.delayed(longPressDuration, () {
+      // 다이얼로그 창 표시
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('이동하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Yes'),
+              // Yes를 누르면 아무 일도 일어나지 않음
+            ),
+            TextButton(
+              onPressed: () {
+                // No를 누르면 URL로 이동하고 카운트 리셋
+                _launchURL('https://www.youtube.com/watch?v=N0K2ofgbMOY').then((value) {
+                  setState(() {
+                    _count = 0;
+                  });
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('No'),
+              // No를 누르면 리다이렉팅
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('카운트 9에 궈널로 리다이렉팅'),
+      ),
+      body: Center(
+        child: GestureDetector(
+          onTap: _incrementCount,
+          onLongPress: _longPressHandler,
+          child: Container(
+            width: 200,
+            height: 200,
+            color: Colors.green,
+            child: Center(
+              child: Text(
+                '$_count',
+                style: TextStyle(
+                  fontSize: 36,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
